@@ -18,12 +18,9 @@ const (
 	outputPrefixLast = "└ "
 )
 
-var (
-	outputJSON bool
-)
-
 func main() {
 	var t depth.Tree
+	var outputJSON bool
 
 	flag.BoolVar(&t.ResolveInternal, "internal", false, "If set, resolves dependencies of internal (stdlib) packages.")
 	flag.BoolVar(&t.ResolveTest, "test", false, "If set, resolves dependencies used for testing.")
@@ -46,6 +43,7 @@ func main() {
 	}
 }
 
+// writePkgJSON writes the full Pkg as JSON to the provided Writer.
 func writePkgJSON(w io.Writer, p depth.Pkg) {
 	e := json.NewEncoder(w)
 	e.SetIndent("", "  ")
