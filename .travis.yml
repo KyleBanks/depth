@@ -5,6 +5,7 @@ go:
   - 1.8.x
 
 install:
+  - go get -u github.com/tj/mmake
   - go get -u github.com/golang/lint/golint
 
-script: make sanity
+script: mmake sanity
