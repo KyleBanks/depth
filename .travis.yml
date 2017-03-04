@@ -1,5 +1,5 @@
 language: go
-sudo: false
+sudo: true
 go:
   - 1.7.x
   - 1.8.x
@@ -8,4 +8,4 @@ install:
   - go get -u github.com/tj/mmake/cmd/mmake
   - go get -u github.com/golang/lint/golint
 
-script: mmake sanity
+script: sudo mmake sanity
