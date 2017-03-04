@@ -8,4 +8,4 @@ install:
   - go get -u github.com/tj/mmake/cmd/mmake
   - go get -u github.com/golang/lint/golint
 
-script: sudo $GOPATH/bin/mmake sanity
+script: $GOPATH/bin/mmake sanity
