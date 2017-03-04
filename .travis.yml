@@ -1,0 +1,11 @@
+language: go
+sudo: false
+go:
+  - 1.6.x
+  - 1.7.x
+  - 1.8.x
+
+install:
+  - go get -u github.com/golang/lint/golint
+
+script: make sanity
