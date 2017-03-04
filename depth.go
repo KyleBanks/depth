@@ -3,18 +3,18 @@
 //
 // For example, the dependencies of the stdlib `strings` package can be resolved like so:
 //
-// ```go
-// import "github.com/KyleBanks/depth"
+// 		```go
+// 		import "github.com/KyleBanks/depth"
 //
-// var t depth.Tree
-// err := t.Resolve("strings")
-// if err != nil {
-//     log.Fatal(err)
-// }
+//		var t depth.Tree
+// 		err := t.Resolve("strings")
+// 		if err != nil {
+//     		log.Fatal(err)
+// 		}
 //
-// // Output: "strings has 4 dependencies."
-// log.Printf("%v has %v dependencies.", t.Root.Name, len(t.Root.Deps))
-// ```
+// 		// Output: "strings has 4 dependencies."
+// 		log.Printf("%v has %v dependencies.", t.Root.Name, len(t.Root.Deps))
+// 		```
 package depth
 
 import (
