@@ -19,6 +19,7 @@ package depth
 
 import (
 	"go/build"
+	"sync"
 )
 
 // Importer defines a type that can import a package and return its details.
@@ -37,6 +38,7 @@ type Tree struct {
 
 	Importer Importer
 
+	mu          sync.Mutex
 	importCache map[string]struct{}
 }
 
@@ -82,6 +84,9 @@ func (t *Tree) isAtMaxDepth(p *Pkg) bool {
 // hasSeenImport returns true if the import name provided has already been seen within the tree.
 // This function only returns false for a name once.
 func (t *Tree) hasSeenImport(name string) bool {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
 	if t.importCache == nil {
 		t.importCache = make(map[string]struct{})
 	}

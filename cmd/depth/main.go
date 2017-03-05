@@ -35,23 +35,23 @@ func main() {
 		}
 
 		if outputJSON {
-			writePkgJSON(os.Stdout, *t.Root)
+			writePkgJSON(os.Stdout, t.Root)
 			continue
 		}
 
-		writePkg(os.Stdout, *t.Root, 0, false)
+		writePkg(os.Stdout, t.Root, 0, false)
 	}
 }
 
 // writePkgJSON writes the full Pkg as JSON to the provided Writer.
-func writePkgJSON(w io.Writer, p depth.Pkg) {
+func writePkgJSON(w io.Writer, p *depth.Pkg) {
 	e := json.NewEncoder(w)
 	e.SetIndent("", "  ")
 	e.Encode(p)
 }
 
 // writePkg recursively prints a Pkg and its dependencies to the Writer provided.
-func writePkg(w io.Writer, p depth.Pkg, indent int, isLast bool) {
+func writePkg(w io.Writer, p *depth.Pkg, indent int, isLast bool) {
 	var prefix string
 	if indent > 0 {
 		prefix = outputPrefix
@@ -64,7 +64,7 @@ func writePkg(w io.Writer, p depth.Pkg, indent int, isLast bool) {
 	out := fmt.Sprintf("%v%v%v\n", strings.Repeat(outputPadding, indent), prefix, p.Name)
 	w.Write([]byte(out))
 
-	for idx, d := range p.Deps {
-		writePkg(w, d, indent+1, idx == len(p.Deps)-1)
+	for i := 0; i < len(p.Deps); i++ {
+		writePkg(w, &p.Deps[i], indent+1, i == len(p.Deps)-1)
 	}
 }
