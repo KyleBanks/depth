@@ -22,3 +22,4 @@ example: | install
 include github.com/KyleBanks/make/misc/precommit
 include github.com/KyleBanks/make/go/sanity
 include github.com/KyleBanks/make/go/release
+include github.com/KyleBanks/make/go/bench
