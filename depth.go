@@ -18,8 +18,13 @@
 package depth
 
 import (
+	"errors"
 	"go/build"
 )
+
+// ErrRootPkgNotResolved is returned when the root Pkg of the Tree cannot be resolved,
+// typically because it does not exist.
+var ErrRootPkgNotResolved = errors.New("unable to resolve root package")
 
 // Importer defines a type that can import a package and return its details.
 type Importer interface {
@@ -45,11 +50,21 @@ type Tree struct {
 func (t *Tree) Resolve(name string) error {
 	t.Root = &Pkg{Name: name, Tree: t}
 
+	// Reset the import cache each time to ensure a reused Tree doesn't
+	// reuse the same cache.
+	t.importCache = nil
+
+	// Allow custom importers, but use build.Default if none is provided.
 	if t.Importer == nil {
 		t.Importer = &build.Default
 	}
 
-	return t.Root.Resolve(t.Importer, true)
+	t.Root.Resolve(t.Importer)
+	if !t.Root.Resolved {
+		return ErrRootPkgNotResolved
+	}
+
+	return nil
 }
 
 // shouldResolveInternal determines if internal packages should be further resolved beyond the

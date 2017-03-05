@@ -31,6 +31,7 @@ func TestPkg_CleanName(t *testing.T) {
 func TestPkg_AddDepImportSeen(t *testing.T) {
 	var m MockImporter
 	var tr Tree
+	tr.Importer = m
 
 	testName := "test"
 	testSrcDir := "src/testing"
@@ -52,15 +53,11 @@ func TestPkg_AddDepImportSeen(t *testing.T) {
 	}
 
 	// Hasn't seen the import
-	if err := p.addDep(m, testName, testSrcDir); err != nil {
-		t.Fatal(err)
-	}
+	p.addDep(m, testName, testSrcDir)
 
 	// Has seen the import
 	expectedIm = build.FindOnly
-	if err := p.addDep(m, testName, testSrcDir); err != nil {
-		t.Fatal(err)
-	}
+	p.addDep(m, testName, testSrcDir)
 }
 
 func TestByInternalAndName(t *testing.T) {
