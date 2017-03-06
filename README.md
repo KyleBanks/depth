@@ -8,6 +8,8 @@
 
 ## Install
 
+Download the appropriate binary for your platform from the [Releases](https://github.com/KyleBanks/depth/releases) page, or:
+
 ```sh
 go get github.com/KyleBanks/depth/cmd/depth
 ```
