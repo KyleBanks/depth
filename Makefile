@@ -1,3 +1,5 @@
+RELEASE_PKG = ./cmd/depth
+
 # Builds and installs the depth CLI.
 install:
 	@go install -v github.com/KyleBanks/depth/cmd/depth
@@ -19,7 +21,7 @@ example: | install
 	depth -test -internal -max 3 strings
 .PHONY: example
 
-include github.com/KyleBanks/make/misc/precommit
+include github.com/KyleBanks/make/git/precommit
 include github.com/KyleBanks/make/go/sanity
 include github.com/KyleBanks/make/go/release
 include github.com/KyleBanks/make/go/bench
