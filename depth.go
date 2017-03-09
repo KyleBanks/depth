@@ -3,23 +3,34 @@
 //
 // For example, the dependencies of the stdlib `strings` package can be resolved like so:
 //
-// 		```go
-// 		import "github.com/KyleBanks/depth"
+// 	import "github.com/KyleBanks/depth"
 //
-//		var t depth.Tree
-// 		err := t.Resolve("strings")
-// 		if err != nil {
-//     		log.Fatal(err)
-// 		}
+//	var t depth.Tree
+// 	err := t.Resolve("strings")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 //
-// 		// Output: "strings has 4 dependencies."
-// 		log.Printf("%v has %v dependencies.", t.Root.Name, len(t.Root.Deps))
-// 		```
+// 	// Output: "strings has 4 dependencies."
+// 	log.Printf("%v has %v dependencies.", t.Root.Name, len(t.Root.Deps))
+//
+// For additional customization, simply set the appropriate flags on the `Tree` before resolving:
+//
+// 	import "github.com/KyleBanks/depth"
+//
+// 	t := depth.Tree {
+//  	ResolveInternal: true,
+//   	ResolveTest: true,
+//   	MaxDepth: 10,
+// 	}
+//
+// err := t.Resolve("strings")
 package depth
 
 import (
 	"errors"
 	"go/build"
+	"os"
 )
 
 // ErrRootPkgNotResolved is returned when the root Pkg of the Tree cannot be resolved,
@@ -48,7 +59,16 @@ type Tree struct {
 // Resolve recursively finds all dependencies for the root Pkg name provided,
 // and the packages it depends on.
 func (t *Tree) Resolve(name string) error {
-	t.Root = &Pkg{Name: name, Tree: t}
+	pwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	t.Root = &Pkg{
+		Name:   name,
+		Tree:   t,
+		SrcDir: pwd,
+	}
 
 	// Reset the import cache each time to ensure a reused Tree doesn't
 	// reuse the same cache.

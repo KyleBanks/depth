@@ -24,10 +24,13 @@ func TestTree_Resolve(t *testing.T) {
 	if err := tr.Resolve("strings"); err != nil {
 		t.Fatal(err)
 	}
+
 	if tr.Root == nil || tr.Root.Name != "strings" {
 		t.Fatalf("Unexpected Root, expected=%v, got=%v", "strings", tr.Root)
 	} else if len(tr.Root.Deps) == 0 {
 		t.Fatal("Expected positive number of Deps")
+	} else if len(tr.Root.SrcDir) == 0 {
+		t.Fatal("Expected SrcDir to be populated")
 	}
 
 	// Reuse the same tree and the same package to ensure that the internal pkg cache

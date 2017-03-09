@@ -11,7 +11,7 @@ include github.com/KyleBanks/make/git/precommit
 
 # Runs a number of depth commands as examples of what's possible.
 example: | install
-	depth github.com/KyleBanks/depth/cmd/depth strings
+	depth github.com/KyleBanks/depth/cmd/depth strings ./
 
 	depth -internal strings 
 
@@ -22,4 +22,8 @@ example: | install
 	depth -test -internal strings
 
 	depth -test -internal -max 3 strings
+
+	depth .
+
+	depth ./cmd/depth
 .PHONY: example

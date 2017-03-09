@@ -45,6 +45,9 @@ func (p *Pkg) Resolve(i Importer) {
 		return
 	}
 
+	// Update the name with the fully qualified import path.
+	p.Name = pkg.ImportPath
+
 	// If this is an internal dependency, we may need to skip it.
 	if pkg.Goroot {
 		p.Internal = true
