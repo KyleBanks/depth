@@ -1,5 +1,8 @@
+VERSION = 1.1.0
+
 RELEASE_PKG = ./cmd/depth
 INSTALL_PKG = $(RELEASE_PKG)
+
 
 # Remote includes require 'mmake' 
 # github.com/tj/mmake
