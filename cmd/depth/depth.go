@@ -20,21 +20,29 @@ const (
 var outputJSON bool
 
 func main() {
-	var t depth.Tree
-	flag.BoolVar(&t.ResolveInternal, "internal", false, "If set, resolves dependencies of internal (stdlib) packages.")
-	flag.BoolVar(&t.ResolveTest, "test", false, "If set, resolves dependencies used for testing.")
-	flag.IntVar(&t.MaxDepth, "max", 0, "Sets the maximum depth of dependencies to resolve.")
-	flag.BoolVar(&outputJSON, "json", false, "If set, outputs the depencies in JSON format.")
-	flag.Parse()
-
-	if err := handlePkgs(&t, flag.Args()); err != nil {
+	t := parse(os.Args[1:])
+	if err := handlePkgs(t, flag.Args(), outputJSON); err != nil {
 		os.Exit(1)
 	}
 }
 
+// parse constructs a depth.Tree from command-line arguments.
+func parse(args []string) *depth.Tree {
+	f := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	var t depth.Tree
+	f.BoolVar(&t.ResolveInternal, "internal", false, "If set, resolves dependencies of internal (stdlib) packages.")
+	f.BoolVar(&t.ResolveTest, "test", false, "If set, resolves dependencies used for testing.")
+	f.IntVar(&t.MaxDepth, "max", 0, "Sets the maximum depth of dependencies to resolve.")
+	f.BoolVar(&outputJSON, "json", false, "If set, outputs the depencies in JSON format.")
+	f.Parse(args)
+
+	return &t
+}
+
 // handlePkgs takes a slice of package names, resolves a Tree on them,
 // and outputs each Tree to Stdout.
-func handlePkgs(t *depth.Tree, pkgs []string) error {
+func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) error {
 	for _, pkg := range pkgs {
 		err := t.Resolve(pkg)
 		if err != nil {
