@@ -2,11 +2,14 @@
 
 [![GoDoc](https://godoc.org/github.com/KyleBanks/depth?status.svg)](https://godoc.org/github.com/KyleBanks/depth)&nbsp; 
 [![Build Status](https://travis-ci.org/KyleBanks/depth.svg?branch=master)](https://travis-ci.org/KyleBanks/depth)&nbsp;
-[![Go Report Card](https://goreportcard.com/badge/github.com/KyleBanks/depth)](https://goreportcard.com/report/github.com/KyleBanks/depth)
+[![Go Report Card](https://goreportcard.com/badge/github.com/KyleBanks/depth)](https://goreportcard.com/report/github.com/KyleBanks/depth)&nbsp;
+[![Coverage Status](https://coveralls.io/repos/github/KyleBanks/depth/badge.svg?branch=master)](https://coveralls.io/github/KyleBanks/depth?branch=master)
 
 `depth` is tool to retrieve and visualize Go source code dependency trees.
 
 ## Install
+
+Download the appropriate binary for your platform from the [Releases](https://github.com/KyleBanks/depth/releases) page, or:
 
 ```sh
 go get github.com/KyleBanks/depth/cmd/depth
@@ -18,7 +21,7 @@ go get github.com/KyleBanks/depth/cmd/depth
 
 ### Command-Line
 
-Simply execute `depth` with one or more package names to visualize:
+Simply execute `depth` with one or more package names to visualize. You can use the fully qualified import path of the package, like so:
 
 ```sh
 $ depth github.com/KyleBanks/depth/cmd/depth
@@ -38,6 +41,14 @@ github.com/KyleBanks/depth/cmd/depth
     └ strings
 ```
 
+Or you can use a relative path, for example:
+
+```sh
+$ depth .
+$ depth ./cmd/depth
+$ depth ../
+```
+
 You can also use `depth` on the Go standard library:
 
 ```sh
@@ -52,7 +63,7 @@ strings
 Visualizing multiple packages at a time is supported by simply naming the packages you'd like to visualize:
 
 ```sh
-$ depth strings github.com/KyleBanks/depth
+$ depth strings github.com/KyleBanks/depth 
 strings
   ├ errors
   ├ io
@@ -176,10 +187,25 @@ if err != nil {
 log.Printf("'%v' has %v dependencies.", t.Root.Name, len(t.Root.Deps)) 
 ```
 
+For additional customization, simply set the appropriate flags on the `Tree` before resolving:
+
+```go
+import "github.com/KyleBanks/depth"
+
+t := depth.Tree {
+  ResolveInternal: true,
+  ResolveTest: true,
+  MaxDepth: 10,
+}
+
+
+err := t.Resolve("strings")
+```
+
 ## Author
 
 `depth` was developed by [Kyle Banks](https://twitter.com/kylewbanks).
 
 ## License
 
-`depth` is available under [MIT](./LICENSE)
+`depth` is available under the [MIT](./LICENSE) license.
