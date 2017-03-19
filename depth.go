@@ -3,34 +3,24 @@
 //
 // For example, the dependencies of the stdlib `strings` package can be resolved like so:
 //
-// 	import "github.com/KyleBanks/depth"
+// 		```go
+// 		import "github.com/KyleBanks/depth"
 //
-//	var t depth.Tree
-// 	err := t.Resolve("strings")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+//		var t depth.Tree
+// 		err := t.Resolve("strings")
+// 		if err != nil {
+//     		log.Fatal(err)
+// 		}
 //
-// 	// Output: "strings has 4 dependencies."
-// 	log.Printf("%v has %v dependencies.", t.Root.Name, len(t.Root.Deps))
-//
-// For additional customization, simply set the appropriate flags on the `Tree` before resolving:
-//
-// 	import "github.com/KyleBanks/depth"
-//
-// 	t := depth.Tree {
-//  	ResolveInternal: true,
-//   	ResolveTest: true,
-//   	MaxDepth: 10,
-// 	}
-//
-// err := t.Resolve("strings")
+// 		// Output: "strings has 4 dependencies."
+// 		log.Printf("%v has %v dependencies.", t.Root.Name, len(t.Root.Deps))
+// 		```
 package depth
 
 import (
 	"errors"
 	"go/build"
-	"os"
+	"sync"
 )
 
 // ErrRootPkgNotResolved is returned when the root Pkg of the Tree cannot be resolved,
@@ -53,22 +43,14 @@ type Tree struct {
 
 	Importer Importer
 
+	mu          sync.Mutex
 	importCache map[string]struct{}
 }
 
 // Resolve recursively finds all dependencies for the root Pkg name provided,
 // and the packages it depends on.
 func (t *Tree) Resolve(name string) error {
-	pwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	t.Root = &Pkg{
-		Name:   name,
-		Tree:   t,
-		SrcDir: pwd,
-	}
+	t.Root = &Pkg{Name: name, Tree: t}
 
 	// Reset the import cache each time to ensure a reused Tree doesn't
 	// reuse the same cache.
@@ -117,6 +99,9 @@ func (t *Tree) isAtMaxDepth(p *Pkg) bool {
 // hasSeenImport returns true if the import name provided has already been seen within the tree.
 // This function only returns false for a name once.
 func (t *Tree) hasSeenImport(name string) bool {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
 	if t.importCache == nil {
 		t.importCache = make(map[string]struct{})
 	}
