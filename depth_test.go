@@ -13,6 +13,37 @@ func (m MockImporter) Import(name, srcDir string, im build.ImportMode) (*build.P
 	return m.ImportFn(name, srcDir, im)
 }
 
+func TestTree_Resolve(t *testing.T) {
+	// Fail case, bad package name
+	var tr Tree
+	if err := tr.Resolve("name"); err != ErrRootPkgNotResolved {
+		t.Fatalf("Unexpected error, expected=%v, got=%b", ErrRootPkgNotResolved, err)
+	}
+
+	// Positive case, expect deps
+	if err := tr.Resolve("strings"); err != nil {
+		t.Fatal(err)
+	}
+
+	if tr.Root == nil || tr.Root.Name != "strings" {
+		t.Fatalf("Unexpected Root, expected=%v, got=%v", "strings", tr.Root)
+	} else if len(tr.Root.Deps) == 0 {
+		t.Fatal("Expected positive number of Deps")
+	} else if len(tr.Root.SrcDir) == 0 {
+		t.Fatal("Expected SrcDir to be populated")
+	}
+
+	// Reuse the same tree and the same package to ensure that the internal pkg cache
+	// is reset and dependencies are still resolved.
+	stringsDepCount := len(tr.Root.Deps)
+	if err := tr.Resolve("strings"); err != nil {
+		t.Fatal(err)
+	}
+	if len(tr.Root.Deps) != stringsDepCount {
+		t.Fatalf("Unexpected number of Deps, expected=%v, got=%b", stringsDepCount, len(tr.Root.Deps))
+	}
+}
+
 func TestTree_shouldResolveInternal(t *testing.T) {
 	var pt Tree
 	pt.Root = &Pkg{}

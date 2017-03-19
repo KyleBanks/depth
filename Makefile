@@ -1,12 +1,20 @@
-# Builds and installs the depth CLI.
-install:
-	@go install -v github.com/KyleBanks/depth/cmd/depth
-	@echo "depth installed."
-.PHONY: install
+VERSION = 1.1.0
+
+RELEASE_PKG = ./cmd/depth
+INSTALL_PKG = $(RELEASE_PKG)
+
+
+# Remote includes require 'mmake' 
+# github.com/tj/mmake
+include github.com/KyleBanks/make/go/install
+include github.com/KyleBanks/make/go/sanity
+include github.com/KyleBanks/make/go/release
+include github.com/KyleBanks/make/go/bench
+include github.com/KyleBanks/make/git/precommit
 
 # Runs a number of depth commands as examples of what's possible.
 example: | install
-	depth github.com/KyleBanks/depth/cmd/depth strings
+	depth github.com/KyleBanks/depth/cmd/depth strings ./
 
 	depth -internal strings 
 
@@ -17,9 +25,8 @@ example: | install
 	depth -test -internal strings
 
 	depth -test -internal -max 3 strings
-.PHONY: example
 
-include github.com/KyleBanks/make/misc/precommit
-include github.com/KyleBanks/make/go/sanity
-include github.com/KyleBanks/make/go/release
-include github.com/KyleBanks/make/go/bench
+	depth .
+
+	depth ./cmd/depth
+.PHONY: example
