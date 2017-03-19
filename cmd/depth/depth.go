@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/KyleBanks/depth"
 )
@@ -20,45 +21,44 @@ const (
 var outputJSON bool
 
 func main() {
-	t := parse(os.Args[1:])
-	if err := handlePkgs(t, flag.Args(), outputJSON); err != nil {
-		os.Exit(1)
+	ResolveInternal := flag.Bool("internal", false, "If set, resolves dependencies of internal (stdlib) packages.")
+	ResolveTest := flag.Bool("test", false, "If set, resolves dependencies used for testing.")
+	MaxDepth := flag.Int("max", 0, "Sets the maximum depth of dependencies to resolve.")
+	outputJSON := flag.Bool("json", false, "If set, outputs the depencies in JSON format.")
+	flag.Parse()
+
+	pkgs := flag.Args()
+	t := &depth.Tree{
+		ResolveInternal: *ResolveInternal,
+		ResolveTest:     *ResolveTest,
+		MaxDepth:        *MaxDepth,
 	}
+
+	handlePkgs(t, pkgs, *outputJSON)
+
 }
 
-// parse constructs a depth.Tree from command-line arguments.
-func parse(args []string) *depth.Tree {
-	f := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	var t depth.Tree
-	f.BoolVar(&t.ResolveInternal, "internal", false, "If set, resolves dependencies of internal (stdlib) packages.")
-	f.BoolVar(&t.ResolveTest, "test", false, "If set, resolves dependencies used for testing.")
-	f.IntVar(&t.MaxDepth, "max", 0, "Sets the maximum depth of dependencies to resolve.")
-	f.BoolVar(&outputJSON, "json", false, "If set, outputs the depencies in JSON format.")
-	f.Parse(args)
-
-	return &t
-}
-
-// handlePkgs takes a slice of package names, resolves a Tree on them,
-// and outputs each Tree to Stdout.
-func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) error {
+func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) {
+	var wg sync.WaitGroup
 	for _, pkg := range pkgs {
-		err := t.Resolve(pkg)
-		if err != nil {
-			fmt.Printf("'%v': FATAL: %v\n", pkg, err)
-			return err
-		}
+		wg.Add(1)
+		go handlePkg(&wg, t, pkg, outputJSON)
+	}
+	wg.Wait()
+}
 
-		if outputJSON {
-			writePkgJSON(os.Stdout, *t.Root)
-			continue
-		}
-
+func handlePkg(wg *sync.WaitGroup, t *depth.Tree, pkg string, outputJSON bool) {
+	defer wg.Done()
+	err := t.Resolve(pkg)
+	if err != nil {
+		fmt.Printf("'%v': FATAL: %v\n", pkg, err)
+		return
+	}
+	if outputJSON {
+		writePkgJSON(os.Stdout, *t.Root)
+	} else {
 		writePkg(os.Stdout, *t.Root, 0, false)
 	}
-
-	return nil
 }
 
 // writePkgJSON writes the full Pkg as JSON to the provided Writer.
