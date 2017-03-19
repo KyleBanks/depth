@@ -1,53 +1,55 @@
 package depth
 
 import (
+	"bytes"
 	"go/build"
 	"path"
 	"sort"
 	"strings"
-	"sync"
 )
 
 // Pkg represents a Go source package, and its dependencies.
 type Pkg struct {
-	Name     string `json:"name"`
-	SrcDir   string `json:"-"`
-	Internal bool   `json:"-"`
+	Name   string `json:"name"`
+	SrcDir string `json:"-"`
+
+	Internal bool `json:"-"`
+	Resolved bool `json:"resolved"`
 
 	Tree   *Tree `json:"-"`
 	Parent *Pkg  `json:"-"`
-	mu     *sync.Mutex
 	Deps   []Pkg `json:"deps"`
 }
 
 // Resolve recursively finds all dependencies for the Pkg and the packages it depends on.
-func (p *Pkg) Resolve(i Importer, resolveImports bool) error {
+func (p *Pkg) Resolve(i Importer) {
+	// Resolved is always true, regardless of if we skip the import,
+	// it is only false if there is an error while importing.
+	p.Resolved = true
+
 	name := p.cleanName()
 	if name == "" {
-		return nil
+		return
 	}
 
-	// Stop resolving imports if we've reached max depth.
-	if resolveImports && p.Tree.isAtMaxDepth(p) {
-		resolveImports = false
-	}
-
+	// Stop resolving imports if we've reached max depth or found a duplicate.
 	var importMode build.ImportMode
-	if !resolveImports {
+	if p.Tree.hasSeenImport(name) || p.Tree.isAtMaxDepth(p) {
 		importMode = build.FindOnly
 	}
 
 	pkg, err := i.Import(name, p.SrcDir, importMode)
 	if err != nil {
-		return err
+		// TODO: Check the error type?
+		p.Resolved = false
+		return
 	}
 
 	// If this is an internal dependency, we may need to skip it.
 	if pkg.Goroot {
 		p.Internal = true
-
 		if !p.Tree.shouldResolveInternal(p) {
-			return nil
+			return
 		}
 	}
 
@@ -56,72 +58,44 @@ func (p *Pkg) Resolve(i Importer, resolveImports bool) error {
 		imports = append(imports, append(pkg.TestImports, pkg.XTestImports...)...)
 	}
 
-	return p.setDeps(i, imports, pkg.Dir)
+	p.setDeps(i, imports, pkg.Dir)
 }
 
 // setDeps takes a slice of import paths and the source directory they are relative to,
 // and creates the Deps of the Pkg. Each dependency is also further resolved prior to being added
 // to the Pkg.
-func (p *Pkg) setDeps(i Importer, imports []string, srcDir string) error {
-	p.mu = &sync.Mutex{}
+func (p *Pkg) setDeps(i Importer, imports []string, srcDir string) {
 	unique := make(map[string]struct{})
-	errCh := make(chan error)
-	var wg sync.WaitGroup
 
 	for _, imp := range imports {
 		// Mostly for testing files where cyclic imports are allowed.
 		if imp == p.Name {
 			continue
 		}
+
 		// Skip duplicates.
 		if _, ok := unique[imp]; ok {
 			continue
 		}
 		unique[imp] = struct{}{}
 
-		wg.Add(1)
-		go func(imp string) {
-			err := p.addDep(i, imp, srcDir)
-
-			wg.Done()
-			if err != nil {
-				errCh <- err
-			}
-		}(imp)
+		p.addDep(i, imp, srcDir)
 	}
 
-	wg.Wait()
-
-	select {
-	case err := <-errCh:
-		return err
-	default:
-		sort.Sort(byInternalAndName(p.Deps))
-		return nil
-	}
+	sort.Sort(byInternalAndName(p.Deps))
 }
 
 // addDep creates a Pkg and it's dependencies from an imported package name.
-func (p *Pkg) addDep(i Importer, name string, srcDir string) error {
-	// Don't resolve imports for Pkgs that we've already seen and resolved.
-	resolveImports := !p.Tree.hasSeenImport(name)
-
+func (p *Pkg) addDep(i Importer, name string, srcDir string) {
 	dep := Pkg{
 		Name:   name,
 		SrcDir: srcDir,
 		Tree:   p.Tree,
 		Parent: p,
 	}
+	dep.Resolve(i)
 
-	if err := dep.Resolve(i, resolveImports); err != nil {
-		return err
-	}
-
-	p.mu.Lock()
 	p.Deps = append(p.Deps, dep)
-	p.mu.Unlock()
-
-	return nil
 }
 
 // isParent goes recursively up the chain of Pkgs to determine if the name provided is ever a
@@ -167,6 +141,17 @@ func (p *Pkg) cleanName() string {
 	}
 
 	return name
+}
+
+// String returns a string representation of the Pkg containing the Pkg name and status.
+func (p *Pkg) String() string {
+	b := bytes.NewBufferString(p.Name)
+
+	if !p.Resolved {
+		b.Write([]byte(" (unresolved)"))
+	}
+
+	return b.String()
 }
 
 // byInternalAndName ensures a slice of Pkgs are sorted such that the internal stdlib

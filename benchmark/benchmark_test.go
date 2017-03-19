@@ -7,8 +7,7 @@ import (
 )
 
 func BenchmarkTree_ResolveStrings(b *testing.B) {
-	var t depth.Tree
-	benchmarkTreeResolveStrings(&t, b)
+	benchmarkTreeResolveStrings(&depth.Tree{}, b)
 }
 
 func BenchmarkTree_ResolveStringsInternal(b *testing.B) {
