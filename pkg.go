@@ -19,6 +19,8 @@ type Pkg struct {
 	Tree   *Tree `json:"-"`
 	Parent *Pkg  `json:"-"`
 	Deps   []Pkg `json:"deps"`
+
+	Raw *build.Package `json:"-"`
 }
 
 // Resolve recursively finds all dependencies for the Pkg and the packages it depends on.
@@ -44,6 +46,7 @@ func (p *Pkg) Resolve(i Importer) {
 		p.Resolved = false
 		return
 	}
+	p.Raw = pkg
 
 	// Update the name with the fully qualified import path.
 	p.Name = pkg.ImportPath

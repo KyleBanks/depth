@@ -23,8 +23,7 @@
 //   	ResolveTest: true,
 //   	MaxDepth: 10,
 // 	}
-//
-// err := t.Resolve("strings")
+// 	err := t.Resolve("strings")
 package depth
 
 import (

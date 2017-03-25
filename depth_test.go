@@ -31,6 +31,8 @@ func TestTree_Resolve(t *testing.T) {
 		t.Fatal("Expected positive number of Deps")
 	} else if len(tr.Root.SrcDir) == 0 {
 		t.Fatal("Expected SrcDir to be populated")
+	} else if tr.Root.Raw == nil {
+		t.Fatal("Expected non-nil Raw")
 	}
 
 	// Reuse the same tree and the same package to ensure that the internal pkg cache
