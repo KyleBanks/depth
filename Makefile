@@ -1,4 +1,4 @@
-VERSION = 1.1.0
+VERSION = 1.1.1
 
 RELEASE_PKG = ./cmd/depth
 INSTALL_PKG = $(RELEASE_PKG)
