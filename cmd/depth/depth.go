@@ -20,14 +20,15 @@ const (
 var outputJSON bool
 
 func main() {
-	t := parse(os.Args[1:])
-	if err := handlePkgs(t, flag.Args(), outputJSON); err != nil {
+	t, pkgs := parse(os.Args[1:])
+	if err := handlePkgs(t, pkgs, outputJSON); err != nil {
 		os.Exit(1)
 	}
 }
 
-// parse constructs a depth.Tree from command-line arguments.
-func parse(args []string) *depth.Tree {
+// parse constructs a depth.Tree from command-line arguments, and returns the
+// remaining user-supplied package names
+func parse(args []string) (*depth.Tree, []string) {
 	f := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	var t depth.Tree
@@ -37,13 +38,14 @@ func parse(args []string) *depth.Tree {
 	f.BoolVar(&outputJSON, "json", false, "If set, outputs the depencies in JSON format.")
 	f.Parse(args)
 
-	return &t
+	return &t, f.Args()
 }
 
 // handlePkgs takes a slice of package names, resolves a Tree on them,
 // and outputs each Tree to Stdout.
 func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) error {
 	for _, pkg := range pkgs {
+
 		err := t.Resolve(pkg)
 		if err != nil {
 			fmt.Printf("'%v': FATAL: %v\n", pkg, err)

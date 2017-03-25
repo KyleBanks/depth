@@ -21,7 +21,7 @@ func Test_parse(t *testing.T) {
 	}
 
 	for idx, tt := range tests {
-		tr := parse([]string{
+		tr, _ := parse([]string{
 			fmt.Sprintf("-internal=%v", tt.internal),
 			fmt.Sprintf("-test=%v", tt.test),
 			fmt.Sprintf("-max=%v", tt.depth),
