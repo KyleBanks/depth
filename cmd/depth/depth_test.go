@@ -50,6 +50,8 @@ func Example_handlePkgsStrings() {
 	//   ├ io
 	//   ├ unicode
 	//   └ unicode/utf8
+	// 4 dependencies (4 internal, 0 external, 0 testing).
+
 }
 
 func Example_handlePkgsTestStrings() {
@@ -71,6 +73,7 @@ func Example_handlePkgsTestStrings() {
 	//   ├ unicode
 	//   ├ unicode/utf8
 	//   └ unsafe
+	// 12 dependencies (12 internal, 0 external, 8 testing).
 }
 
 func Example_handlePkgsDepth() {
@@ -93,6 +96,7 @@ func Example_handlePkgsDepth() {
 	//     ├ path
 	//     ├ sort
 	//     └ strings
+	// 12 dependencies (11 internal, 1 external, 0 testing).
 }
 
 func Example_handlePkgsUnknown() {
