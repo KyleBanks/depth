@@ -19,6 +19,16 @@ const (
 
 var outputJSON bool
 
+type summary struct {
+	numInternal int
+	numExternal int
+	numTesting  int
+}
+
+func newSummary() (sum *summary) {
+	return &summary{0,0,0}
+}
+
 func main() {
 	t, pkgs := parse(os.Args[1:])
 	if err := handlePkgs(t, pkgs, outputJSON); err != nil {
@@ -58,9 +68,41 @@ func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) error {
 		}
 
 		writePkg(os.Stdout, *t.Root, 0, false)
+		writePkgSummary(os.Stdout, *t.Root)
 	}
-
 	return nil
+}
+
+// writePkgSummary
+func writePkgSummary(w io.Writer, pkg depth.Pkg) {
+	sum := newSummary()
+	set := make(map[string]struct{})
+	for _, p := range pkg.Deps {
+		collectSum(sum, p, set)
+	}
+	out := fmt.Sprintf("%d dependencies (%d internal, %d external, %d testing).",
+	                    sum.numInternal + sum.numExternal,
+											sum.numInternal,
+											sum.numExternal,
+										  sum.numTesting)
+	w.Write([]byte(out))
+}
+
+func collectSum(sum *summary, pkg depth.Pkg, nameSet map[string]struct{}) {
+	if _, ok := nameSet[pkg.Name]; !ok {
+		nameSet[pkg.Name] = struct{}{}
+		if pkg.Internal {
+			sum.numInternal++
+		} else {
+			sum.numExternal++
+		}
+		if pkg.Test {
+			sum.numTesting++
+		}
+		for _, p := range pkg.Deps {
+			collectSum(sum, p, nameSet)
+		}
+	}
 }
 
 // writePkgJSON writes the full Pkg as JSON to the provided Writer.

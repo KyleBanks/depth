@@ -15,6 +15,7 @@ type Pkg struct {
 
 	Internal bool `json:"-"`
 	Resolved bool `json:"resolved"`
+	Test     bool `json:"-"`
 
 	Tree   *Tree `json:"-"`
 	Parent *Pkg  `json:"-"`
@@ -59,20 +60,19 @@ func (p *Pkg) Resolve(i Importer) {
 		}
 	}
 
-	imports := pkg.Imports
+  //first we set the regular dependencies, then we add the test dependencies
+	//sharing the same set. This allows us to mark all test-only deps linearly
+	unique := make(map[string]struct{})
+	p.setDeps(i, pkg.Imports, pkg.Dir, unique, false)
 	if p.Tree.ResolveTest {
-		imports = append(imports, append(pkg.TestImports, pkg.XTestImports...)...)
+		p.setDeps(i, append(pkg.TestImports, pkg.XTestImports...), pkg.Dir, unique, true)
 	}
-
-	p.setDeps(i, imports, pkg.Dir)
 }
 
 // setDeps takes a slice of import paths and the source directory they are relative to,
 // and creates the Deps of the Pkg. Each dependency is also further resolved prior to being added
 // to the Pkg.
-func (p *Pkg) setDeps(i Importer, imports []string, srcDir string) {
-	unique := make(map[string]struct{})
-
+func (p *Pkg) setDeps(i Importer, imports []string, srcDir string, unique map[string]struct{}, isTest bool) {
 	for _, imp := range imports {
 		// Mostly for testing files where cyclic imports are allowed.
 		if imp == p.Name {
@@ -85,19 +85,20 @@ func (p *Pkg) setDeps(i Importer, imports []string, srcDir string) {
 		}
 		unique[imp] = struct{}{}
 
-		p.addDep(i, imp, srcDir)
+		p.addDep(i, imp, srcDir, isTest)
 	}
 
 	sort.Sort(byInternalAndName(p.Deps))
 }
 
 // addDep creates a Pkg and it's dependencies from an imported package name.
-func (p *Pkg) addDep(i Importer, name string, srcDir string) {
+func (p *Pkg) addDep(i Importer, name string, srcDir string, isTest bool) {
 	dep := Pkg{
 		Name:   name,
 		SrcDir: srcDir,
 		Tree:   p.Tree,
 		Parent: p,
+		Test: isTest,
 	}
 	dep.Resolve(i)
 
