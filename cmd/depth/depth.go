@@ -25,10 +25,6 @@ type summary struct {
 	numTesting  int
 }
 
-func newSummary() (sum *summary) {
-	return &summary{0,0,0}
-}
-
 func main() {
 	t, pkgs := parse(os.Args[1:])
 	if err := handlePkgs(t, pkgs, outputJSON); err != nil {
@@ -73,12 +69,12 @@ func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) error {
 	return nil
 }
 
-// writePkgSummary
+// writePkgSummary writes a summary of all packages in a tree
 func writePkgSummary(w io.Writer, pkg depth.Pkg) {
-	sum := newSummary()
+	sum := &summary{0,0,0}
 	set := make(map[string]struct{})
 	for _, p := range pkg.Deps {
-		collectSum(sum, p, set)
+		collectSummary(sum, p, set)
 	}
 	out := fmt.Sprintf("%d dependencies (%d internal, %d external, %d testing).",
 	                    sum.numInternal + sum.numExternal,
@@ -88,7 +84,7 @@ func writePkgSummary(w io.Writer, pkg depth.Pkg) {
 	w.Write([]byte(out))
 }
 
-func collectSum(sum *summary, pkg depth.Pkg, nameSet map[string]struct{}) {
+func collectSummary(sum *summary, pkg depth.Pkg, nameSet map[string]struct{}) {
 	if _, ok := nameSet[pkg.Name]; !ok {
 		nameSet[pkg.Name] = struct{}{}
 		if pkg.Internal {
@@ -100,7 +96,7 @@ func collectSum(sum *summary, pkg depth.Pkg, nameSet map[string]struct{}) {
 			sum.numTesting++
 		}
 		for _, p := range pkg.Deps {
-			collectSum(sum, p, nameSet)
+			collectSummary(sum, p, nameSet)
 		}
 	}
 }
