@@ -71,10 +71,10 @@ func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) error {
 
 // writePkgSummary writes a summary of all packages in a tree
 func writePkgSummary(w io.Writer, pkg depth.Pkg) {
-	sum := &summary{0,0,0}
+	var sum summary
 	set := make(map[string]struct{})
 	for _, p := range pkg.Deps {
-		collectSummary(sum, p, set)
+		collectSummary(&sum, p, set)
 	}
 	out := fmt.Sprintf("%d dependencies (%d internal, %d external, %d testing).",
 	                    sum.numInternal + sum.numExternal,
