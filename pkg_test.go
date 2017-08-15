@@ -53,11 +53,11 @@ func TestPkg_AddDepImportSeen(t *testing.T) {
 	}
 
 	// Hasn't seen the import
-	p.addDep(m, testName, testSrcDir)
+	p.addDep(m, testName, testSrcDir, false)
 
 	// Has seen the import
 	expectedIm = build.FindOnly
-	p.addDep(m, testName, testSrcDir)
+	p.addDep(m, testName, testSrcDir, false)
 }
 
 func TestByInternalAndName(t *testing.T) {
