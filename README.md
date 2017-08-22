@@ -170,6 +170,18 @@ $ depth -json github.com/KyleBanks/depth/cmd/depth
 }
 ```
 
+#### `-explain target-package`
+
+The `-explain` flag instructs `depth` to print import chains in which the
+`target-package` is found:
+
+```sh
+$ depth -explain strings github.com/KyleBanks/depth/cmd/depth
+github.com/KyleBanks/depth/cmd/depth -> strings
+github.com/KyleBanks/depth/cmd/depth -> github.com/KyleBanks/depth -> strings
+```
+
+
 ### Integrating With Your Project
 
 The `depth` package can easily be used to retrieve the dependency tree for a particular package in your own project. For example, here's how you would retrieve the dependency tree for the `strings` package:

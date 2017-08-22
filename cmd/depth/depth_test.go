@@ -13,11 +13,14 @@ func Test_parse(t *testing.T) {
 		test     bool
 		depth    int
 		json     bool
+		explain  string
 	}{
-		{true, true, 0, true},
-		{false, false, 10, false},
-		{true, false, 10, false},
-		{false, true, 5, true},
+		{true, true, 0, true, ""},
+		{false, false, 10, false, ""},
+		{true, false, 10, false, ""},
+		{false, true, 5, true, ""},
+		{false, true, 5, true, "github.com/KyleBanks/depth"},
+		{false, true, 5, true, ""},
 	}
 
 	for idx, tt := range tests {
@@ -26,6 +29,7 @@ func Test_parse(t *testing.T) {
 			fmt.Sprintf("-test=%v", tt.test),
 			fmt.Sprintf("-max=%v", tt.depth),
 			fmt.Sprintf("-json=%v", tt.json),
+			fmt.Sprintf("-explain=%v", tt.explain),
 		})
 
 		if tr.ResolveInternal != tt.internal {
@@ -36,6 +40,8 @@ func Test_parse(t *testing.T) {
 			t.Fatalf("[%v] Unexpected MaxDepth, expected=%v, got=%v", idx, tt.depth, tr.MaxDepth)
 		} else if outputJSON != tt.json {
 			t.Fatalf("[%v] Unexpected outputJSON, expected=%v, got=%v", idx, tt.json, outputJSON)
+		} else if explainPkg != tt.explain {
+			t.Fatalf("[%v] Unexpected explainPkg, expected=%v, got=%v", idx, tt.explain, explainPkg)
 		}
 	}
 }
@@ -43,7 +49,7 @@ func Test_parse(t *testing.T) {
 func Example_handlePkgsStrings() {
 	var t depth.Tree
 
-	handlePkgs(&t, []string{"strings"}, false)
+	handlePkgs(&t, []string{"strings"}, false, "")
 	// Output:
 	// strings
 	//   ├ errors
@@ -58,7 +64,7 @@ func Example_handlePkgsTestStrings() {
 	var t depth.Tree
 	t.ResolveTest = true
 
-	handlePkgs(&t, []string{"strings"}, false)
+	handlePkgs(&t, []string{"strings"}, false, "")
 	// Output:
 	// strings
 	//   ├ bytes
@@ -79,7 +85,7 @@ func Example_handlePkgsTestStrings() {
 func Example_handlePkgsDepth() {
 	var t depth.Tree
 
-	handlePkgs(&t, []string{"github.com/KyleBanks/depth/cmd/depth"}, false)
+	handlePkgs(&t, []string{"github.com/KyleBanks/depth/cmd/depth"}, false, "")
 	// Output:
 	// github.com/KyleBanks/depth/cmd/depth
 	//   ├ encoding/json
@@ -102,14 +108,14 @@ func Example_handlePkgsDepth() {
 func Example_handlePkgsUnknown() {
 	var t depth.Tree
 
-	handlePkgs(&t, []string{"notreal"}, false)
+	handlePkgs(&t, []string{"notreal"}, false, "")
 	// Output:
 	// 'notreal': FATAL: unable to resolve root package
 }
 
 func Example_handlePkgsJson() {
 	var t depth.Tree
-	handlePkgs(&t, []string{"strings"}, true)
+	handlePkgs(&t, []string{"strings"}, true, "")
 
 	// Output:
 	// {
@@ -138,4 +144,12 @@ func Example_handlePkgsJson() {
 	//     }
 	//   ]
 	// }
+}
+func Example_handlePkgsExplain() {
+	var t depth.Tree
+
+	handlePkgs(&t, []string{"github.com/KyleBanks/depth/cmd/depth"}, false, "strings")
+	// Output:
+	// github.com/KyleBanks/depth/cmd/depth -> strings
+	// github.com/KyleBanks/depth/cmd/depth -> github.com/KyleBanks/depth -> strings
 }

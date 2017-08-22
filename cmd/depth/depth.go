@@ -18,6 +18,7 @@ const (
 )
 
 var outputJSON bool
+var explainPkg string
 
 type summary struct {
 	numInternal int
@@ -27,7 +28,7 @@ type summary struct {
 
 func main() {
 	t, pkgs := parse(os.Args[1:])
-	if err := handlePkgs(t, pkgs, outputJSON); err != nil {
+	if err := handlePkgs(t, pkgs, outputJSON, explainPkg); err != nil {
 		os.Exit(1)
 	}
 }
@@ -42,6 +43,7 @@ func parse(args []string) (*depth.Tree, []string) {
 	f.BoolVar(&t.ResolveTest, "test", false, "If set, resolves dependencies used for testing.")
 	f.IntVar(&t.MaxDepth, "max", 0, "Sets the maximum depth of dependencies to resolve.")
 	f.BoolVar(&outputJSON, "json", false, "If set, outputs the depencies in JSON format.")
+	f.StringVar(&explainPkg, "explain", "", "If set, show which packages import the specified target")
 	f.Parse(args)
 
 	return &t, f.Args()
@@ -49,7 +51,7 @@ func parse(args []string) (*depth.Tree, []string) {
 
 // handlePkgs takes a slice of package names, resolves a Tree on them,
 // and outputs each Tree to Stdout.
-func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) error {
+func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool, explainPkg string) error {
 	for _, pkg := range pkgs {
 
 		err := t.Resolve(pkg)
@@ -60,6 +62,11 @@ func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool) error {
 
 		if outputJSON {
 			writePkgJSON(os.Stdout, *t.Root)
+			continue
+		}
+
+		if explainPkg != "" {
+			writeExplain(os.Stdout, *t.Root, []string{}, explainPkg)
 			continue
 		}
 
@@ -124,5 +131,16 @@ func writePkg(w io.Writer, p depth.Pkg, indent int, isLast bool) {
 
 	for idx, d := range p.Deps {
 		writePkg(w, d, indent+1, idx == len(p.Deps)-1)
+	}
+}
+
+// writeExplain shows possible paths for a given package.
+func writeExplain(w io.Writer, pkg depth.Pkg, stack []string, explain string) {
+	stack = append(stack, pkg.Name)
+	if pkg.Name == explain {
+		fmt.Fprintln(w, strings.Join(stack, " -> "))
+	}
+	for _, p := range pkg.Deps {
+		writeExplain(w, p, stack, explain)
 	}
 }
