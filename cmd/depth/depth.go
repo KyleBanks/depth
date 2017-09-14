@@ -83,12 +83,11 @@ func writePkgSummary(w io.Writer, pkg depth.Pkg) {
 	for _, p := range pkg.Deps {
 		collectSummary(&sum, p, set)
 	}
-	out := fmt.Sprintf("%d dependencies (%d internal, %d external, %d testing).",
+	fmt.Fprintf(w, "%d dependencies (%d internal, %d external, %d testing).\n",
 	                    sum.numInternal + sum.numExternal,
 											sum.numInternal,
 											sum.numExternal,
 										  sum.numTesting)
-	w.Write([]byte(out))
 }
 
 func collectSummary(sum *summary, pkg depth.Pkg, nameSet map[string]struct{}) {
@@ -126,8 +125,7 @@ func writePkg(w io.Writer, p depth.Pkg, indent int, isLast bool) {
 		}
 	}
 
-	out := fmt.Sprintf("%v%v%v\n", strings.Repeat(outputPadding, indent), prefix, p.String())
-	w.Write([]byte(out))
+	fmt.Fprintf(w, "%v%v%v\n", strings.Repeat(outputPadding, indent), prefix, p.String())
 
 	for idx, d := range p.Deps {
 		writePkg(w, d, indent+1, idx == len(p.Deps)-1)
