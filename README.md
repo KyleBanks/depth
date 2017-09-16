@@ -39,6 +39,7 @@ github.com/KyleBanks/depth/cmd/depth
     ├ path
     ├ sort
     └ strings
+12 dependencies (11 internal, 1 external, 0 testing).
 ```
 
 Or you can use a relative path, for example:
@@ -58,6 +59,7 @@ strings
   ├ io
   ├ unicode
   └ unicode/utf8
+5 dependencies (5 internal, 0 external, 0 testing).
 ```
 
 Visualizing multiple packages at a time is supported by simply naming the packages you'd like to visualize:
@@ -69,12 +71,14 @@ strings
   ├ io
   ├ unicode
   └ unicode/utf8
+5 dependencies (5 internal, 0 external, 0 testing).
 github.com/KyleBanks/depth
   ├ fmt
   ├ go/build
   ├ path
   ├ sort
   └ strings
+7 dependencies (7 internal, 0 external, 0 testing).
 ```
 
 #### `-internal`
@@ -100,6 +104,7 @@ strings
       └ unsafe
   ├ unicode
   └ unicode/utf8
+12 dependencies (12 internal, 0 external, 0 testing).
 ```
 
 #### `-max` 
@@ -117,6 +122,7 @@ github.com/KyleBanks/depth/cmd/depth
   ├ os
   ├ strings
   └ github.com/KyleBanks/depth
+7 dependencies (6 internal, 1 external, 0 testing).
 ```
 
 The `-max` flag is particularly useful in conjunction with the `-internal` flag which can lead to very deep dependency trees.
@@ -140,6 +146,18 @@ strings
   ├ unicode
   ├ unicode/utf8
   └ unsafe
+13 dependencies (13 internal, 0 external, 8 testing).
+```
+
+#### `-explain target-package`
+
+The `-explain` flag instructs `depth` to print import chains in which the
+`target-package` is found:
+
+```sh
+$ depth -explain strings github.com/KyleBanks/depth/cmd/depth
+github.com/KyleBanks/depth/cmd/depth -> strings
+github.com/KyleBanks/depth/cmd/depth -> github.com/KyleBanks/depth -> strings
 ```
 
 #### `-json`
@@ -169,18 +187,6 @@ $ depth -json github.com/KyleBanks/depth/cmd/depth
   ]
 }
 ```
-
-#### `-explain target-package`
-
-The `-explain` flag instructs `depth` to print import chains in which the
-`target-package` is found:
-
-```sh
-$ depth -explain strings github.com/KyleBanks/depth/cmd/depth
-github.com/KyleBanks/depth/cmd/depth -> strings
-github.com/KyleBanks/depth/cmd/depth -> github.com/KyleBanks/depth -> strings
-```
-
 
 ### Integrating With Your Project
 
