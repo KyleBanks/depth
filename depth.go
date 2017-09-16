@@ -67,7 +67,7 @@ func (t *Tree) Resolve(name string) error {
 		Name:   name,
 		Tree:   t,
 		SrcDir: pwd,
-		Test: false,
+		Test:   false,
 	}
 
 	// Reset the import cache each time to ensure a reused Tree doesn't

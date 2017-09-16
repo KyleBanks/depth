@@ -53,10 +53,11 @@ func Example_handlePkgsStrings() {
 	// Output:
 	// strings
 	//   ├ errors
+	//   ├ internal/cpu
 	//   ├ io
 	//   ├ unicode
 	//   └ unicode/utf8
-	// 4 dependencies (4 internal, 0 external, 0 testing).
+	// 5 dependencies (5 internal, 0 external, 0 testing).
 
 }
 
@@ -70,6 +71,7 @@ func Example_handlePkgsTestStrings() {
 	//   ├ bytes
 	//   ├ errors
 	//   ├ fmt
+	//   ├ internal/cpu
 	//   ├ io
 	//   ├ io/ioutil
 	//   ├ math/rand
@@ -79,7 +81,7 @@ func Example_handlePkgsTestStrings() {
 	//   ├ unicode
 	//   ├ unicode/utf8
 	//   └ unsafe
-	// 12 dependencies (12 internal, 0 external, 8 testing).
+	// 13 dependencies (13 internal, 0 external, 8 testing).
 }
 
 func Example_handlePkgsDepth() {
@@ -124,6 +126,11 @@ func Example_handlePkgsJson() {
 	//   "deps": [
 	//     {
 	//       "name": "errors",
+	//       "resolved": true,
+	//       "deps": null
+	//     },
+	//     {
+	//       "name": "internal/cpu",
 	//       "resolved": true,
 	//       "deps": null
 	//     },

@@ -84,10 +84,10 @@ func writePkgSummary(w io.Writer, pkg depth.Pkg) {
 		collectSummary(&sum, p, set)
 	}
 	fmt.Fprintf(w, "%d dependencies (%d internal, %d external, %d testing).\n",
-	                    sum.numInternal + sum.numExternal,
-											sum.numInternal,
-											sum.numExternal,
-										  sum.numTesting)
+		sum.numInternal+sum.numExternal,
+		sum.numInternal,
+		sum.numExternal,
+		sum.numTesting)
 }
 
 func collectSummary(sum *summary, pkg depth.Pkg, nameSet map[string]struct{}) {

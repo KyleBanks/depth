@@ -60,7 +60,7 @@ func (p *Pkg) Resolve(i Importer) {
 		}
 	}
 
-  //first we set the regular dependencies, then we add the test dependencies
+	//first we set the regular dependencies, then we add the test dependencies
 	//sharing the same set. This allows us to mark all test-only deps linearly
 	unique := make(map[string]struct{})
 	p.setDeps(i, pkg.Imports, pkg.Dir, unique, false)
@@ -98,7 +98,7 @@ func (p *Pkg) addDep(i Importer, name string, srcDir string, isTest bool) {
 		SrcDir: srcDir,
 		Tree:   p.Tree,
 		Parent: p,
-		Test: isTest,
+		Test:   isTest,
 	}
 	dep.Resolve(i)
 
