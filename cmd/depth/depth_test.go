@@ -122,36 +122,43 @@ func Example_handlePkgsJson() {
 	// Output:
 	// {
 	//   "name": "strings",
+	//   "internal": true,
 	//   "resolved": true,
 	//   "deps": [
 	//     {
 	//       "name": "errors",
+	//       "internal": true,
 	//       "resolved": true,
 	//       "deps": null
 	//     },
 	//     {
 	//       "name": "internal/cpu",
+	//       "internal": true,
 	//       "resolved": true,
 	//       "deps": null
 	//     },
 	//     {
 	//       "name": "io",
+	//       "internal": true,
 	//       "resolved": true,
 	//       "deps": null
 	//     },
 	//     {
 	//       "name": "unicode",
+	//       "internal": true,
 	//       "resolved": true,
 	//       "deps": null
 	//     },
 	//     {
 	//       "name": "unicode/utf8",
+	//       "internal": true,
 	//       "resolved": true,
 	//       "deps": null
 	//     }
 	//   ]
 	// }
 }
+
 func Example_handlePkgsExplain() {
 	var t depth.Tree
 

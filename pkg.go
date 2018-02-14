@@ -13,7 +13,7 @@ type Pkg struct {
 	Name   string `json:"name"`
 	SrcDir string `json:"-"`
 
-	Internal bool `json:"-"`
+	Internal bool `json:"internal"`
 	Resolved bool `json:"resolved"`
 	Test     bool `json:"-"`
 

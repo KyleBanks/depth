@@ -171,14 +171,17 @@ $ depth -json github.com/KyleBanks/depth/cmd/depth
   "deps": [
     {
       "name": "encoding/json",
+      "internal": true,
       "deps": null
     },
     ...
     {
       "name": "github.com/KyleBanks/depth",
+      "internal": false,
       "deps": [
         {
           "name": "go/build",
+          "internal": true,
           "deps": null
         },
         ...
