@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	outputPadding    = "  "
-	outputPrefix     = "├ "
-	outputPrefixLast = "└ "
+	outputClosedPadding = "  "
+	outputOpenPadding   = "│ "
+	outputPrefix        = "├ "
+	outputPrefixLast    = "└ "
 )
 
 var outputJSON bool
@@ -70,7 +71,7 @@ func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool, explainPkg string
 			continue
 		}
 
-		writePkg(os.Stdout, *t.Root, 0, false)
+		writePkg(os.Stdout, *t.Root)
 		writePkgSummary(os.Stdout, *t.Root)
 	}
 	return nil
@@ -114,21 +115,39 @@ func writePkgJSON(w io.Writer, p depth.Pkg) {
 	e.Encode(p)
 }
 
-// writePkg recursively prints a Pkg and its dependencies to the Writer provided.
-func writePkg(w io.Writer, p depth.Pkg, indent int, isLast bool) {
-	var prefix string
-	if indent > 0 {
-		prefix = outputPrefix
-
-		if isLast {
-			prefix = outputPrefixLast
-		}
-	}
-
-	fmt.Fprintf(w, "%v%v%v\n", strings.Repeat(outputPadding, indent), prefix, p.String())
+func writePkg(w io.Writer, p depth.Pkg) {
+	fmt.Fprintf(w, "%s\n", p.String())
 
 	for idx, d := range p.Deps {
-		writePkg(w, d, indent+1, idx == len(p.Deps)-1)
+		writePkgRec(w, d, []bool{true}, idx == len(p.Deps)-1)
+	}
+}
+
+// writePkg recursively prints a Pkg and its dependencies to the Writer provided.
+func writePkgRec(w io.Writer, p depth.Pkg, closed []bool, isLast bool) {
+	var prefix string
+
+	for _, c := range closed {
+		if c {
+			prefix += outputClosedPadding
+			continue
+		}
+
+		prefix += outputOpenPadding
+	}
+
+	closed = append(closed, false)
+	if isLast {
+		prefix += outputPrefixLast
+		closed[len(closed)-1] = true
+	} else {
+		prefix += outputPrefix
+	}
+
+	fmt.Fprintf(w, "%v%v\n", prefix, p.String())
+
+	for idx, d := range p.Deps {
+		writePkgRec(w, d, closed, idx == len(p.Deps)-1)
 	}
 }
 
