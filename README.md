@@ -30,12 +30,13 @@ github.com/KyleBanks/depth/cmd/depth
   ├ flag
   ├ fmt
   ├ io
-  ├ log
   ├ os
   ├ strings
   └ github.com/KyleBanks/depth
-    ├ fmt
+    ├ bytes
+    ├ errors
     ├ go/build
+    ├ os
     ├ path
     ├ sort
     └ strings
@@ -56,6 +57,7 @@ You can also use `depth` on the Go standard library:
 $ depth strings
 strings
   ├ errors
+  ├ internal/cpu
   ├ io
   ├ unicode
   └ unicode/utf8
@@ -68,13 +70,16 @@ Visualizing multiple packages at a time is supported by simply naming the packag
 $ depth strings github.com/KyleBanks/depth 
 strings
   ├ errors
+  ├ internal/cpu
   ├ io
   ├ unicode
   └ unicode/utf8
 5 dependencies (5 internal, 0 external, 0 testing).
 github.com/KyleBanks/depth
-  ├ fmt
+  ├ bytes
+  ├ errors
   ├ go/build
+  ├ os
   ├ path
   ├ sort
   └ strings
@@ -89,19 +94,20 @@ By default, `depth` only resolves the top level of dependencies for standard lib
 $ depth -internal strings
 strings
   ├ errors
+  ├ internal/cpu
   ├ io
-    ├ errors
-    └ sync
-      ├ internal/race
-        └ unsafe
-      ├ runtime
-        ├ runtime/internal/atomic
-          └ unsafe
-        ├ runtime/internal/sys
-        └ unsafe
-      ├ sync/atomic
-        └ unsafe
-      └ unsafe
+  │ ├ errors
+  │ └ sync
+  │   ├ internal/race
+  │   │ └ unsafe
+  │   ├ runtime
+  │   │ ├ runtime/internal/atomic
+  │   │ │ └ unsafe
+  │   │ ├ runtime/internal/sys
+  │   │ └ unsafe
+  │   ├ sync/atomic
+  │   │ └ unsafe
+  │   └ unsafe
   ├ unicode
   └ unicode/utf8
 12 dependencies (12 internal, 0 external, 0 testing).
@@ -118,7 +124,6 @@ github.com/KyleBanks/depth/cmd/depth
   ├ flag
   ├ fmt
   ├ io
-  ├ log
   ├ os
   ├ strings
   └ github.com/KyleBanks/depth
@@ -137,6 +142,7 @@ strings
   ├ bytes
   ├ errors
   ├ fmt
+  ├ internal/cpu
   ├ io
   ├ io/ioutil
   ├ math/rand
