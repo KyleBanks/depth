@@ -53,12 +53,13 @@ func Example_handlePkgsStrings() {
 	// Output:
 	// strings
 	//   ├ errors
-	//   ├ internal/cpu
+	//   ├ internal/bytealg
 	//   ├ io
+	//   ├ sync
 	//   ├ unicode
-	//   └ unicode/utf8
-	// 5 dependencies (5 internal, 0 external, 0 testing).
-
+	//   ├ unicode/utf8
+	//   └ unsafe
+	// 7 dependencies (7 internal, 0 external, 0 testing).
 }
 
 func Example_handlePkgsTestStrings() {
@@ -71,17 +72,18 @@ func Example_handlePkgsTestStrings() {
 	//   ├ bytes
 	//   ├ errors
 	//   ├ fmt
-	//   ├ internal/cpu
+	//   ├ internal/bytealg
+	//   ├ internal/testenv
 	//   ├ io
-	//   ├ io/ioutil
 	//   ├ math/rand
 	//   ├ reflect
+	//   ├ strconv
 	//   ├ sync
 	//   ├ testing
 	//   ├ unicode
 	//   ├ unicode/utf8
 	//   └ unsafe
-	// 13 dependencies (13 internal, 0 external, 8 testing).
+	// 14 dependencies (14 internal, 0 external, 7 testing).
 }
 
 func Example_handlePkgsDepth() {
@@ -132,13 +134,19 @@ func Example_handlePkgsJson() {
 	//       "deps": null
 	//     },
 	//     {
-	//       "name": "internal/cpu",
+	//       "name": "internal/bytealg",
 	//       "internal": true,
 	//       "resolved": true,
 	//       "deps": null
 	//     },
 	//     {
 	//       "name": "io",
+	//       "internal": true,
+	//       "resolved": true,
+	//       "deps": null
+	//     },
+	//     {
+	//       "name": "sync",
 	//       "internal": true,
 	//       "resolved": true,
 	//       "deps": null
@@ -154,9 +162,16 @@ func Example_handlePkgsJson() {
 	//       "internal": true,
 	//       "resolved": true,
 	//       "deps": null
+	//     },
+	//     {
+	//       "name": "unsafe",
+	//       "internal": true,
+	//       "resolved": true,
+	//       "deps": null
 	//     }
 	//   ]
 	// }
+
 }
 
 func Example_handlePkgsExplain() {
