@@ -218,6 +218,17 @@ $ depth -json github.com/KyleBanks/depth/cmd/depth
 }
 ```
 
+#### `-graph`
+
+The `-graph` flag instructs `depth` to render the dependencies into a png file using graphviz
+
+```sh
+$ depth -graph github.com/KyleBanks/depth/cmd/depth
+```
+
+![graph.png](graph.png)
+
+
 ### Integrating With Your Project
 
 The `depth` package can easily be used to retrieve the dependency tree for a particular package in your own project. For example, here's how you would retrieve the dependency tree for the `strings` package:
