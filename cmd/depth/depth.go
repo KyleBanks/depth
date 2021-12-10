@@ -1,15 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
-	"os"
-	"log"
-	"bytes"
-	"strings"
 	"github.com/goccy/go-graphviz"
+	"io"
+	"log"
+	"os"
+	"strings"
 
 	"github.com/KyleBanks/depth"
 )
@@ -33,7 +33,7 @@ type summary struct {
 
 func main() {
 	t, pkgs := parse(os.Args[1:])
-	if err := handlePkgs(t, pkgs, outputJSON, explainPkg,outputGraph); err != nil {
+	if err := handlePkgs(t, pkgs, outputJSON, explainPkg, outputGraph); err != nil {
 		os.Exit(1)
 	}
 }
@@ -174,79 +174,78 @@ func writeExplain(w io.Writer, pkg depth.Pkg, stack []string, explain string) {
 
 // generateGraph creates a node graph and renders it as a file
 func generateGraph(pkg depth.Pkg) {
-	
+
 	//adjacency list
-adjlist := make(map[string][]string)
-for _, p := range pkg.Deps {
+	adjlist := make(map[string][]string)
+	for _, p := range pkg.Deps {
 
-	_, parentok := adjlist[p.Parent.Name]
-	if !parentok {
-		adjlist[p.Parent.Name] = make([]string, 0)
+		_, parentok := adjlist[p.Parent.Name]
+		if !parentok {
+			adjlist[p.Parent.Name] = make([]string, 0)
+		}
+		adjlist[p.Parent.Name] = append(adjlist[p.Parent.Name], p.Name)
+
+		_, ok := adjlist[p.Name]
+		if !ok {
+			adjlist[p.Name] = make([]string, 0)
+		}
+
+		generateGraphRec(p, p.Name, adjlist)
 	}
-	adjlist[p.Parent.Name] = append(adjlist[p.Parent.Name], p.Name)
 
-	_, ok := adjlist[p.Name]
-	if !ok {
-		adjlist[p.Name] = make([]string, 0)
-	}
+	g := graphviz.New()
+	graph, err := g.Graph()
 
+	defer func() {
+		if err := graph.Close(); err != nil {
+			log.Fatal(err)
+		}
+		g.Close()
+	}()
 
-	generateGraphRec(p, p.Name, adjlist)
-}
-
-g := graphviz.New()
-graph, err := g.Graph()
-
-defer func() {
-	if err := graph.Close(); err != nil {
-		log.Fatal(err)
-	}
-	g.Close()
-}()
-
-if err != nil {
-	log.Fatal(err)
-}
-
-for parent, children := range adjlist {
-	n, err := graph.CreateNode(parent)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, child := range children {
-		c, err := graph.CreateNode(child)
+	for parent, children := range adjlist {
+		n, err := graph.CreateNode(parent)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		_, err = graph.CreateEdge("", n, c)
-		if err != nil {
-			log.Fatal(err)
-		}
+		for _, child := range children {
+			c, err := graph.CreateNode(child)
+			if err != nil {
+				log.Fatal(err)
+			}
 
+			_, err = graph.CreateEdge("", n, c)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+		}
 	}
-}
 
-var buf bytes.Buffer
-if err := g.Render(graph, "dot", &buf); err != nil {
-	log.Fatal(err)
-}
+	var buf bytes.Buffer
+	if err := g.Render(graph, "dot", &buf); err != nil {
+		log.Fatal(err)
+	}
 
-if err := g.RenderFilename(graph, graphviz.PNG, "graph.png"); err != nil {
-	log.Fatal(err)
-}
+	if err := g.RenderFilename(graph, graphviz.PNG, "graph.png"); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func generateGraphRec(pkg depth.Pkg, parent string, adjlist map[string][]string) {
 
-for _, p := range pkg.Deps {
-	_, ok := adjlist[p.Name]
-	if !ok {
-		adjlist[p.Name] = make([]string, 0)
-	}
+	for _, p := range pkg.Deps {
+		_, ok := adjlist[p.Name]
+		if !ok {
+			adjlist[p.Name] = make([]string, 0)
+		}
 
-	adjlist[parent] = append(adjlist[parent], p.Name)
-	generateGraphRec(p, p.Name, adjlist)
-}
+		adjlist[parent] = append(adjlist[parent], p.Name)
+		generateGraphRec(p, p.Name, adjlist)
+	}
 }
