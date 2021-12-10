@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"log"
+	"bytes"
 	"strings"
+	"github.com/goccy/go-graphviz"
 
 	"github.com/KyleBanks/depth"
 )
@@ -20,6 +23,7 @@ const (
 
 var outputJSON bool
 var explainPkg string
+var outputGraph bool
 
 type summary struct {
 	numInternal int
@@ -29,7 +33,7 @@ type summary struct {
 
 func main() {
 	t, pkgs := parse(os.Args[1:])
-	if err := handlePkgs(t, pkgs, outputJSON, explainPkg); err != nil {
+	if err := handlePkgs(t, pkgs, outputJSON, explainPkg,outputGraph); err != nil {
 		os.Exit(1)
 	}
 }
@@ -45,6 +49,7 @@ func parse(args []string) (*depth.Tree, []string) {
 	f.IntVar(&t.MaxDepth, "max", 0, "Sets the maximum depth of dependencies to resolve.")
 	f.BoolVar(&outputJSON, "json", false, "If set, outputs the depencies in JSON format.")
 	f.StringVar(&explainPkg, "explain", "", "If set, show which packages import the specified target")
+	f.BoolVar(&outputGraph, "graph", false, "If set, renders the dependencies in a graph and outputs as a png file")
 	f.Parse(args)
 
 	return &t, f.Args()
@@ -52,7 +57,7 @@ func parse(args []string) (*depth.Tree, []string) {
 
 // handlePkgs takes a slice of package names, resolves a Tree on them,
 // and outputs each Tree to Stdout.
-func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool, explainPkg string) error {
+func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool, explainPkg string, outputGraph bool) error {
 	for _, pkg := range pkgs {
 
 		err := t.Resolve(pkg)
@@ -68,6 +73,11 @@ func handlePkgs(t *depth.Tree, pkgs []string, outputJSON bool, explainPkg string
 
 		if explainPkg != "" {
 			writeExplain(os.Stdout, *t.Root, []string{}, explainPkg)
+			continue
+		}
+
+		if outputGraph {
+			generateGraph(*t.Root)
 			continue
 		}
 
@@ -160,4 +170,83 @@ func writeExplain(w io.Writer, pkg depth.Pkg, stack []string, explain string) {
 	for _, p := range pkg.Deps {
 		writeExplain(w, p, stack, explain)
 	}
+}
+
+// generateGraph creates a node graph and renders it as a file
+func generateGraph(pkg depth.Pkg) {
+	
+	//adjacency list
+adjlist := make(map[string][]string)
+for _, p := range pkg.Deps {
+
+	_, parentok := adjlist[p.Parent.Name]
+	if !parentok {
+		adjlist[p.Parent.Name] = make([]string, 0)
+	}
+	adjlist[p.Parent.Name] = append(adjlist[p.Parent.Name], p.Name)
+
+	_, ok := adjlist[p.Name]
+	if !ok {
+		adjlist[p.Name] = make([]string, 0)
+	}
+
+
+	generateGraphRec(p, p.Name, adjlist)
+}
+
+g := graphviz.New()
+graph, err := g.Graph()
+
+defer func() {
+	if err := graph.Close(); err != nil {
+		log.Fatal(err)
+	}
+	g.Close()
+}()
+
+if err != nil {
+	log.Fatal(err)
+}
+
+for parent, children := range adjlist {
+	n, err := graph.CreateNode(parent)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, child := range children {
+		c, err := graph.CreateNode(child)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = graph.CreateEdge("", n, c)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	}
+}
+
+var buf bytes.Buffer
+if err := g.Render(graph, "dot", &buf); err != nil {
+	log.Fatal(err)
+}
+
+if err := g.RenderFilename(graph, graphviz.PNG, "graph.png"); err != nil {
+	log.Fatal(err)
+}
+}
+
+func generateGraphRec(pkg depth.Pkg, parent string, adjlist map[string][]string) {
+
+for _, p := range pkg.Deps {
+	_, ok := adjlist[p.Name]
+	if !ok {
+		adjlist[p.Name] = make([]string, 0)
+	}
+
+	adjlist[parent] = append(adjlist[parent], p.Name)
+	generateGraphRec(p, p.Name, adjlist)
+}
 }
