@@ -56,10 +56,13 @@ You can also use `depth` on the Go standard library:
 $ depth strings
 strings
   ├ errors
+  ├ internal/bytealg
   ├ io
+  ├ sync
   ├ unicode
-  └ unicode/utf8
-5 dependencies (5 internal, 0 external, 0 testing).
+  ├ unicode/utf8
+  └ unsafe
+7 dependencies (7 internal, 0 external, 0 testing).
 ```
 
 Visualizing multiple packages at a time is supported by simply naming the packages you'd like to visualize:
@@ -68,13 +71,18 @@ Visualizing multiple packages at a time is supported by simply naming the packag
 $ depth strings github.com/KyleBanks/depth 
 strings
   ├ errors
+  ├ internal/bytealg
   ├ io
+  ├ sync
   ├ unicode
-  └ unicode/utf8
-5 dependencies (5 internal, 0 external, 0 testing).
+  ├ unicode/utf8
+  └ unsafe
+7 dependencies (7 internal, 0 external, 0 testing).
 github.com/KyleBanks/depth
-  ├ fmt
+  ├ bytes
+  ├ errors
   ├ go/build
+  ├ os
   ├ path
   ├ sort
   └ strings
@@ -89,22 +97,39 @@ By default, `depth` only resolves the top level of dependencies for standard lib
 $ depth -internal strings
 strings
   ├ errors
+  │ └ internal/reflectlite
+  │   ├ internal/unsafeheader
+  │   │ └ unsafe
+  │   ├ runtime
+  │   │ ├ internal/abi
+  │   │ │ └ unsafe
+  │   │ ├ internal/bytealg
+  │   │ │ ├ internal/cpu
+  │   │ │ └ unsafe
+  │   │ ├ internal/cpu
+  │   │ ├ internal/goexperiment
+  │   │ ├ runtime/internal/atomic
+  │   │ │ └ unsafe
+  │   │ ├ runtime/internal/math
+  │   │ │ └ runtime/internal/sys
+  │   │ ├ runtime/internal/sys
+  │   │ └ unsafe
+  │   └ unsafe
+  ├ internal/bytealg
   ├ io
-    ├ errors
-    └ sync
-      ├ internal/race
-        └ unsafe
-      ├ runtime
-        ├ runtime/internal/atomic
-          └ unsafe
-        ├ runtime/internal/sys
-        └ unsafe
-      ├ sync/atomic
-        └ unsafe
-      └ unsafe
+  │ ├ errors
+  │ └ sync
+  │   ├ internal/race
+  │   │ └ unsafe
+  │   ├ runtime
+  │   ├ sync/atomic
+  │   │ └ unsafe
+  │   └ unsafe
+  ├ sync
   ├ unicode
-  └ unicode/utf8
-12 dependencies (12 internal, 0 external, 0 testing).
+  ├ unicode/utf8
+  └ unsafe
+18 dependencies (18 internal, 0 external, 0 testing).
 ```
 
 #### `-max` 
@@ -137,16 +162,18 @@ strings
   ├ bytes
   ├ errors
   ├ fmt
+  ├ internal/bytealg
+  ├ internal/testenv
   ├ io
-  ├ io/ioutil
   ├ math/rand
   ├ reflect
+  ├ strconv
   ├ sync
   ├ testing
   ├ unicode
   ├ unicode/utf8
   └ unsafe
-13 dependencies (13 internal, 0 external, 8 testing).
+14 dependencies (14 internal, 0 external, 7 testing).
 ```
 
 #### `-explain target-package`
